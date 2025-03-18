@@ -270,12 +270,14 @@ for i in range(5):
         }
 
         function runCode() {
-            const code = getActiveEditor().getValue();
+            const editor = getActiveEditor();
+            const code = editor.getValue();
             
-            fetch('http://localhost:5000/run_code', {
+            fetch('/run', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ code: code })
             })
@@ -283,14 +285,14 @@ for i in range(5):
             .then(data => {
                 const outputDiv = document.getElementById('output');
                 if (data.error) {
-                    outputDiv.innerHTML = `Hata: ${data.output}`;
+                    outputDiv.innerHTML = `<pre class="text-danger">${data.error}</pre>`;
                 } else {
-                    outputDiv.innerHTML = data.output || 'Çıktı yok';
+                    outputDiv.innerHTML = `<pre>${data.output}</pre>`;
                 }
             })
             .catch(error => {
-                const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = `Bağlantı hatası: ${error.message}`;
+                console.error('Hata:', error);
+                document.getElementById('output').innerHTML = `<pre class="text-danger">Bağlantı hatası: ${error.message}</pre>`;
             });
         }
 
@@ -317,33 +319,12 @@ for i in range(5):
 
         function handleConsoleInput(event) {
             if (event.key === 'Enter') {
-                const input = document.getElementById('console-input');
-                const command = input.value.trim();
-                
-                if (command.startsWith('pip install ')) {
-                    const package = command.substring(11);
-                    appendToConsole(`$ ${command}`);
-                    
-                    fetch('http://localhost:5000/install_package', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ package: package })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        appendToConsole(data.output);
-                    })
-                    .catch(error => {
-                        appendToConsole(`Hata: ${error.message}`);
-                    });
-                } else {
-                    appendToConsole(`$ ${command}`);
-                    appendToConsole('Sadece pip install komutları desteklenmektedir.');
+                const input = document.getElementById('console-input').value;
+                if (input.startsWith('pip install ')) {
+                    const package = input.substring(11);
+                    installPackage(package);
                 }
-                
-                input.value = '';
+                document.getElementById('console-input').value = '';
             }
         }
 
@@ -404,32 +385,26 @@ for i in range(5):
             outputDiv.innerHTML = `Kod "${fileName}" olarak kaydedildi.`;
         }
 
-        function installPackage() {
-            const packageInput = document.getElementById('packageInput');
-            const package = packageInput.value.trim();
-            
-            if (!package) {
-                const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = 'Lütfen bir paket adı girin.';
-                return;
-            }
-
-            fetch('http://localhost:5000/install_package', {
+        function installPackage(package) {
+            fetch('/install_package', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ package: package })
             })
             .then(response => response.json())
             .then(data => {
-                const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = data.output;
-                packageInput.value = '';
+                const consoleOutput = document.getElementById('console-output');
+                consoleOutput.innerHTML += `<div>${data.output}</div>`;
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
             })
             .catch(error => {
-                const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = `Bağlantı hatası: ${error.message}`;
+                console.error('Hata:', error);
+                const consoleOutput = document.getElementById('console-output');
+                consoleOutput.innerHTML += `<div class="text-danger">Bağlantı hatası: ${error.message}</div>`;
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
             });
         }
     </script>

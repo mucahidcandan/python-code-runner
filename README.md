@@ -1,78 +1,38 @@
-# Candan Python Düzenleyici
+# Candan Python Düzenleyicisi
 
-Öğrenciler için basit ve kullanışlı bir Python kod çalıştırma uygulaması.
+Bu uygulama, Python kodlarını çalıştırmak ve test etmek için geliştirilmiş basit bir web tabanlı editördür.
 
 ## Özellikler
 
 - Çoklu sekme desteği
-- Python kodlarını çalıştırma
+- Python kod çalıştırma
 - Paket yükleme desteği
-- Kod kaydetme özelliği
-- Kullanıcı dostu arayüz
-
-## Öğrenciler İçin Kurulum Adımları
-
-### 1. Dosyayı İndirme
-1. [Releases](https://github.com/mucahidcandan/CandanPythonDuzenleyici/releases) sayfasına gidin
-2. En üstteki "CandanPythonDuzenleyici-v1.0.0.zip" dosyasını indirin
-   - İndirme başlamazsa "Download" butonuna tıklayın
-   - Tarayıcı indirme çubuğunda dosyayı görebilirsiniz
-
-### 2. Dosyayı Açma
-1. İndirilen zip dosyasını bulun (genellikle "Downloads" klasöründe)
-2. Zip dosyasına sağ tıklayın
-3. "Tümünü Çıkart" veya "Extract All" seçeneğini seçin
-4. "Çıkart" veya "Extract" butonuna tıklayın
-5. Yeni bir klasör açılacak
-
-### 3. Uygulamayı Çalıştırma
-1. Açılan klasörde "CandanPythonDuzenleyici" klasörüne girin
-2. "CandanPythonDuzenleyici.exe" dosyasını çift tıklayın
-3. Uygulama otomatik olarak tarayıcınızda açılacaktır
-
-### 4. Güvenlik Uyarısı
-- İlk kez çalıştırırken Windows güvenlik uyarısı görebilirsiniz
-- "Daha fazla bilgi" veya "More info" seçeneğine tıklayın
-- "Yine de çalıştır" veya "Run anyway" butonuna tıklayın
-
-## Kullanım
-
-1. Uygulamayı başlatın
-2. Kodunuzu yazın
-3. "Kodu Çalıştır" butonuna tıklayın
-4. Çıktıyı alt kısımda görebilirsiniz
-
-### Paket Yükleme
-
-Konsol kısmına şu komutu yazarak paket yükleyebilirsiniz:
-```
-pip install paket_adi
-```
-
-### Kod Kaydetme
-
-1. "Aktif Tabı Kaydet" butonuna tıklayın
-2. Kodunuz otomatik olarak .py dosyası olarak kaydedilecektir
+- Kod kaydetme
+- Syntax highlighting
+- Otomatik girinti
+- Hata yakalama ve gösterimi
 
 ## Gereksinimler
 
-- Windows 10 veya üzeri
-- İnternet bağlantısı (paket yüklemek için)
+- Python 3.8 veya daha yüksek bir sürüm
 
-## Sorun Yaşarsanız
+## Kurulum ve Çalıştırma
 
-1. Windows Defender veya antivirüs programınız uygulamayı engelliyorsa:
-   - Güvenlik uyarısında "Daha fazla bilgi" seçeneğine tıklayın
-   - "Yine de çalıştır" butonuna tıklayın
+1. Python'u yükleyin (eğer yüklü değilse)
+2. `run.bat` dosyasını çift tıklayarak çalıştırın
+   - Gerekli paketler otomatik olarak yüklenecektir
+   - Uygulama otomatik olarak başlayacaktır
+3. Tarayıcınızda otomatik olarak `http://localhost:5000` adresine yönlendirileceksiniz
+4. Eğer otomatik yönlendirme olmazsa, tarayıcınızı açıp manuel olarak `http://localhost:5000` adresine gidin
 
-2. Uygulama açılmıyorsa:
-   - Bilgisayarınızı yeniden başlatın
-   - Uygulamayı tekrar çalıştırın
+## Kullanım
 
-3. Paket yükleme hatası alırsanız:
-   - İnternet bağlantınızı kontrol edin
-   - Paket adını doğru yazdığınızdan emin olun
+1. Editörde Python kodunuzu yazın
+2. "Kodu Çalıştır" butonuna tıklayın
+3. Çıktıyı sağ taraftaki panelde görebilirsiniz
+4. Yeni sekme eklemek için "+" butonuna tıklayın
+5. Paket yüklemek için konsol kısmına `pip install paket_adi` yazın
 
-## Lisans
+## Geliştirici
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın. 
+Dr. Mücahid Candan ve Yapay Zeka 
