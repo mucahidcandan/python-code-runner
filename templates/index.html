@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Kod Calistirici</title>
+    <title>Candan Python Düzenleyicisi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css" rel="stylesheet">
@@ -14,10 +14,16 @@
         }
         #output {
             min-height: 100px;
+            max-height: 300px;
             background-color: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
             white-space: pre-wrap;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-width: 100%;
+            font-family: 'Consolas', monospace;
+            border: 1px solid #ddd;
         }
         .tab-content {
             border: 1px solid #ddd;
@@ -53,22 +59,60 @@
             margin-left: 5px;
             cursor: pointer;
         }
+        .output-container {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+        }
+        .console-container {
+            background-color: #1e1e1e;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+        }
+        .console-input {
+            display: flex;
+            gap: 10px;
+        }
+        .console-input input {
+            flex: 1;
+            background-color: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            color: #fff;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .console-input button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .console-input button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Python Kod Çalıştırıcı</h1>
+        <h1 class="text-center mb-4">Candan Python Düzenleyicisi</h1>
         <div class="row">
             <div class="col-md-8">
                 <ul class="nav nav-tabs" id="editorTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">
-                            Tab 1 <span class="tab-close" onclick="closeTab('tab1')">×</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="tab2-tab" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">
-                            Tab 2 <span class="tab-close" onclick="closeTab('tab2')">×</span>
+                            <span class="tab-name" onclick="editTabName(event, 'tab1')">Tab 1</span> <span class="tab-close" onclick="closeTab('tab1')">×</span>
                         </button>
                     </li>
                     <li class="nav-item">
@@ -82,12 +126,6 @@ print("Merhaba!")
 for i in range(5):
     print(f"Sayı: {i}")</textarea>
                     </div>
-                    <div class="tab-pane fade" id="tab2" role="tabpanel">
-                        <textarea id="code2"># Python kodunuzu buraya yazın
-print("Merhaba!")
-for i in range(5):
-    print(f"Sayı: {i}")</textarea>
-                    </div>
                 </div>
             </div>
             <div class="col-md-4">
@@ -95,6 +133,7 @@ for i in range(5):
                     <button class="btn btn-primary" onclick="runCode()">Kodu Çalıştır</button>
                     <button class="btn btn-secondary" onclick="clearCode()">Kodu Temizle</button>
                     <button class="btn btn-info" onclick="clearOutput()">Çıktıyı Temizle</button>
+                    <button class="btn btn-success" onclick="saveActiveTab()">Aktif Tabı Kaydet</button>
                 </div>
                 <div class="mt-3">
                     <h5>Çıktı:</h5>
@@ -104,7 +143,10 @@ for i in range(5):
         </div>
         <div class="row mt-4">
             <div class="col-12">
-                <h5>Konsol:</h5>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Konsol:</h5>
+                    <button class="btn btn-danger btn-sm" onclick="clearConsole()">Konsolu Temizle</button>
+                </div>
                 <div id="console">
                     <div id="console-output"></div>
                     <input type="text" class="console-input" id="console-input" placeholder="pip install paket_adi" onkeypress="handleConsoleInput(event)">
@@ -129,19 +171,10 @@ for i in range(5):
                 autoCloseBrackets: true,
                 matchBrackets: true,
                 indentWithTabs: false
-            }),
-            tab2: CodeMirror.fromTextArea(document.getElementById("code2"), {
-                mode: "python",
-                theme: "monokai",
-                lineNumbers: true,
-                indentUnit: 4,
-                autoCloseBrackets: true,
-                matchBrackets: true,
-                indentWithTabs: false
             })
         };
 
-        let tabCounter = 2;
+        let tabCounter = 1;
 
         function getActiveEditor() {
             const activeTab = document.querySelector('.nav-tabs .nav-link.active');
@@ -246,6 +279,10 @@ for i in range(5):
             document.getElementById('output').innerHTML = '';
         }
 
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
         function appendToConsole(text) {
             const consoleOutput = document.getElementById('console-output');
             const line = document.createElement('div');
@@ -284,6 +321,86 @@ for i in range(5):
                 
                 input.value = '';
             }
+        }
+
+        function editTabName(event, tabId) {
+            event.stopPropagation(); // Tab değiştirmeyi engelle
+            const tabButton = document.getElementById(`${tabId}-tab`);
+            const tabNameSpan = tabButton.querySelector('.tab-name');
+            const currentName = tabNameSpan.textContent;
+            
+            // Düzenleme moduna geç
+            tabNameSpan.innerHTML = `<input type="text" value="${currentName}" onblur="saveTabName(event, '${tabId}')" onkeypress="handleTabNameKeyPress(event, '${tabId}')">`;
+            tabNameSpan.classList.add('editing');
+            tabNameSpan.querySelector('input').focus();
+        }
+
+        function saveTabName(event, tabId) {
+            const tabButton = document.getElementById(`${tabId}-tab`);
+            const tabNameSpan = tabButton.querySelector('.tab-name');
+            const input = tabNameSpan.querySelector('input');
+            const newName = input.value.trim() || 'Yeni Sekme';
+            
+            tabNameSpan.textContent = newName;
+            tabNameSpan.classList.remove('editing');
+        }
+
+        function saveActiveTab() {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            const tabId = activeTab.id.replace('-tab', '');
+            const tabName = activeTab.querySelector('.tab-name').textContent;
+            const code = editors[tabId].getValue();
+            
+            // Dosya adı için tab adını düzenle
+            const fileName = tabName.toLowerCase().replace(/\s+/g, '_') + '.py';
+            
+            // Blob oluştur
+            const blob = new Blob([code], { type: 'text/plain' });
+            
+            // Dosya indirme linki oluştur
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            
+            // Linki tıkla ve temizle
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            // Kullanıcıya bilgi ver
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `Kod "${fileName}" olarak kaydedildi.`;
+        }
+
+        function installPackage() {
+            const packageInput = document.getElementById('packageInput');
+            const package = packageInput.value.trim();
+            
+            if (!package) {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = 'Lütfen bir paket adı girin.';
+                return;
+            }
+
+            fetch('/install_package', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ package: package })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = data.output;
+                packageInput.value = '';
+            })
+            .catch(error => {
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = `Hata: ${error.message}`;
+            });
         }
     </script>
 </body>

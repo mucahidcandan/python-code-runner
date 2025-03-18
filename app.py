@@ -70,5 +70,30 @@ def run_code():
         except:
             pass
 
+@app.route('/install_package', methods=['POST'])
+def install_package():
+    try:
+        package = request.json.get('package', '')
+        if not package:
+            return jsonify({'output': 'Lütfen bir paket adı girin.'})
+
+        # pip install komutunu çalıştır
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', package],
+                              capture_output=True,
+                              text=True)
+        
+        if result.returncode == 0:
+            return jsonify({
+                'output': f'Paket başarıyla yüklendi: {package}\n{result.stdout}'
+            })
+        else:
+            return jsonify({
+                'output': f'Hata: {result.stderr}'
+            })
+    except Exception as e:
+        return jsonify({
+            'output': f'Hata: {str(e)}'
+        })
+
 if __name__ == '__main__':
     app.run(debug=True) 
