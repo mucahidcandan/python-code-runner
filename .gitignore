@@ -20,6 +20,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+release/
+
+# Bat dosyaları
+*.bat
+*.exe
 
 # Node
 node_modules/

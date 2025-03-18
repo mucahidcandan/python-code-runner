@@ -121,10 +121,7 @@
                 </ul>
                 <div class="tab-content" id="editorTabsContent">
                     <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-                        <textarea id="code1"># Python kodunuzu buraya yazın
-print("Merhaba!")
-for i in range(5):
-    print(f"Sayı: {i}")</textarea>
+                        <div id="tab1-editor"></div>
                     </div>
                 </div>
             </div>
@@ -162,25 +159,27 @@ for i in range(5):
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     <script>
-        var editors = {
-            tab1: CodeMirror.fromTextArea(document.getElementById("code1"), {
+        let tabCounter = 1;
+        let editors = {};
+
+        // Sayfa yüklendiğinde ilk editörü başlat
+        document.addEventListener('DOMContentLoaded', function() {
+            // İlk editörü oluştur
+            editors.tab1 = CodeMirror(document.getElementById("tab1-editor"), {
                 mode: "python",
                 theme: "monokai",
                 lineNumbers: true,
                 indentUnit: 4,
                 autoCloseBrackets: true,
                 matchBrackets: true,
-                indentWithTabs: false
-            })
-        };
-
-        let tabCounter = 1;
-
-        function getActiveEditor() {
-            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
-            const tabId = activeTab.id.replace('-tab', '');
-            return editors[tabId];
-        }
+                indentWithTabs: false,
+                value: `# Python kodunuzu buraya yazın
+print("Merhaba!")
+for i in range(5):
+    print(f"Sayı: {i}")`
+            });
+            editors.tab1.refresh();
+        });
 
         function addNewTab() {
             tabCounter++;
@@ -192,7 +191,7 @@ for i in range(5):
             newTab.className = 'nav-item';
             newTab.innerHTML = `
                 <button class="nav-link" id="${tabId}-tab" data-bs-toggle="tab" data-bs-target="#${tabId}" type="button" role="tab">
-                    Tab ${tabCounter} <span class="tab-close" onclick="closeTab('${tabId}')">×</span>
+                    <span class="tab-name" onclick="editTabName(event, '${tabId}')">Tab ${tabCounter}</span> <span class="tab-close" onclick="closeTab('${tabId}')">×</span>
                 </button>
             `;
             tabList.insertBefore(newTab, tabList.lastElementChild);
@@ -203,28 +202,56 @@ for i in range(5):
             newContent.className = 'tab-pane fade';
             newContent.id = tabId;
             newContent.role = 'tabpanel';
-            newContent.innerHTML = `<textarea id="${tabId}"># Python kodunuzu buraya yazın</textarea>`;
+            newContent.innerHTML = `<div id="${tabId}-editor"></div>`;
             tabContent.appendChild(newContent);
 
+            // Bootstrap tab nesnesini oluştur ve aktifleştir
+            const tab = new bootstrap.Tab(document.getElementById(`${tabId}-tab`));
+            tab.show();
+
             // Yeni editör oluştur
-            editors[tabId] = CodeMirror.fromTextArea(document.getElementById(tabId), {
+            editors[tabId] = CodeMirror(document.getElementById(`${tabId}-editor`), {
                 mode: "python",
                 theme: "monokai",
                 lineNumbers: true,
                 indentUnit: 4,
                 autoCloseBrackets: true,
                 matchBrackets: true,
-                indentWithTabs: false
+                indentWithTabs: false,
+                value: `# Python kodunuzu buraya yazın
+print("Merhaba!")
+for i in range(5):
+    print(f"Sayı: {i}")`
             });
 
-            // Yeni tabı aktif yap
-            document.getElementById(`${tabId}-tab`).click();
+            // Editörü yenile
+            editors[tabId].refresh();
+        }
+
+        // Tab değiştirme olayını dinle
+        document.addEventListener('shown.bs.tab', function (event) {
+            const tabId = event.target.id.replace('-tab', '');
+            if (editors[tabId]) {
+                editors[tabId].refresh();
+            }
+        });
+
+        function getActiveEditor() {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            const tabId = activeTab.id.replace('-tab', '');
+            return editors[tabId];
         }
 
         function closeTab(tabId) {
-            if (Object.keys(editors).length <= 1) {
-                alert('En az bir tab açık kalmalı!');
-                return;
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            const currentTabId = activeTab.id.replace('-tab', '');
+            
+            // Eğer kapatılmak istenen tab aktif tab ise, başka bir tabı aktif yap
+            if (currentTabId === tabId) {
+                const otherTab = document.querySelector(`.nav-tabs .nav-link:not(#${tabId}-tab)`);
+                if (otherTab) {
+                    otherTab.click();
+                }
             }
 
             // Tab butonunu kaldır
@@ -236,14 +263,14 @@ for i in range(5):
             // Editörü kaldır
             delete editors[tabId];
 
-            // İlk tabı aktif yap
-            document.querySelector('.nav-tabs .nav-link').click();
+            // Eğer başka tab kalmadıysa yeni tab oluştur
+            if (Object.keys(editors).length === 0) {
+                addNewTab();
+            }
         }
 
         function runCode() {
             const code = getActiveEditor().getValue();
-            const outputDiv = document.getElementById('output');
-            outputDiv.innerHTML = 'Çalıştırılıyor...';
             
             fetch('http://localhost:5000/run_code', {
                 method: 'POST',
@@ -252,13 +279,9 @@ for i in range(5):
                 },
                 body: JSON.stringify({ code: code })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Sunucu hatası');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
+                const outputDiv = document.getElementById('output');
                 if (data.error) {
                     outputDiv.innerHTML = `Hata: ${data.output}`;
                 } else {
@@ -266,7 +289,8 @@ for i in range(5):
                 }
             })
             .catch(error => {
-                outputDiv.innerHTML = `Hata: ${error.message}`;
+                const outputDiv = document.getElementById('output');
+                outputDiv.innerHTML = `Bağlantı hatası: ${error.message}`;
             });
         }
 
@@ -335,6 +359,12 @@ for i in range(5):
             tabNameSpan.querySelector('input').focus();
         }
 
+        function handleTabNameKeyPress(event, tabId) {
+            if (event.key === 'Enter') {
+                saveTabName(event, tabId);
+            }
+        }
+
         function saveTabName(event, tabId) {
             const tabButton = document.getElementById(`${tabId}-tab`);
             const tabNameSpan = tabButton.querySelector('.tab-name');
@@ -384,7 +414,7 @@ for i in range(5):
                 return;
             }
 
-            fetch('/install_package', {
+            fetch('http://localhost:5000/install_package', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -399,7 +429,7 @@ for i in range(5):
             })
             .catch(error => {
                 const outputDiv = document.getElementById('output');
-                outputDiv.innerHTML = `Hata: ${error.message}`;
+                outputDiv.innerHTML = `Bağlantı hatası: ${error.message}`;
             });
         }
     </script>
