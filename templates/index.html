@@ -24,6 +24,7 @@
             max-width: 100%;
             font-family: 'Consolas', monospace;
             border: 1px solid #ddd;
+            margin-top: 20px;
         }
         .tab-content {
             border: 1px solid #ddd;
@@ -102,13 +103,29 @@
         .console-input button:hover {
             background-color: #45a049;
         }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        .action-buttons .btn {
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
     </style>
 </head>
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">Candan Python Düzenleyicisi</h1>
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-12">
+                <div class="action-buttons">
+                    <button class="btn btn-primary btn-sm" onclick="runCode()">Kodu Çalıştır</button>
+                    <button class="btn btn-secondary btn-sm" onclick="clearCode()">Kodu Temizle</button>
+                    <button class="btn btn-info btn-sm" onclick="clearOutput()">Çıktıyı Temizle</button>
+                    <button class="btn btn-success btn-sm" onclick="saveActiveTab()">Aktif Tabı Kaydet</button>
+                </div>
                 <ul class="nav nav-tabs" id="editorTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="tab1-tab" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">
@@ -123,14 +140,6 @@
                     <div class="tab-pane fade show active" id="tab1" role="tabpanel">
                         <div id="tab1-editor"></div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-primary" onclick="runCode()">Kodu Çalıştır</button>
-                    <button class="btn btn-secondary" onclick="clearCode()">Kodu Temizle</button>
-                    <button class="btn btn-info" onclick="clearOutput()">Çıktıyı Temizle</button>
-                    <button class="btn btn-success" onclick="saveActiveTab()">Aktif Tabı Kaydet</button>
                 </div>
                 <div class="mt-3">
                     <h5>Çıktı:</h5>
@@ -273,7 +282,7 @@ for i in range(5):
             const editor = getActiveEditor();
             const code = editor.getValue();
             
-            fetch('/run', {
+            fetch('/api/run_code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -285,7 +294,7 @@ for i in range(5):
             .then(data => {
                 const outputDiv = document.getElementById('output');
                 if (data.error) {
-                    outputDiv.innerHTML = `<pre class="text-danger">${data.error}</pre>`;
+                    outputDiv.innerHTML = `<pre class="text-danger">${data.output}</pre>`;
                 } else {
                     outputDiv.innerHTML = `<pre>${data.output}</pre>`;
                 }
@@ -386,7 +395,7 @@ for i in range(5):
         }
 
         function installPackage(package) {
-            fetch('/install_package', {
+            fetch('/api/install_package', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
