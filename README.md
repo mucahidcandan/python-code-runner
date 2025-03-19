@@ -1,4 +1,4 @@
-# Candan Python Düzenleyicisi
+# Python Düzenleyicisi
 
 Bu uygulama, Python kodlarını çalıştırmak ve test etmek için geliştirilmiş basit bir web tabanlı editördür.
 
