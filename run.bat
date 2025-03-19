@@ -18,7 +18,7 @@ if errorlevel 1 (
 
 REM pip kurulumunu kontrol et ve gerekirse yukle
 echo [BILGI] Gerekli paketler kontrol ediliyor...
-pip install -r requirements.txt >nul 2>&1
+python -m pip install -r requirements.txt >nul 2>&1
 if errorlevel 1 (
     echo [HATA] Paketler yuklenirken bir hata olustu!
     echo Lutfen internet baglantinizi kontrol edin ve tekrar deneyin.
